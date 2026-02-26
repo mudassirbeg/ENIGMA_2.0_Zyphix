@@ -13,9 +13,11 @@ import { Line } from "react-chartjs-2";
 ChartJS.register(LineElement, PointElement, LinearScale, Title, Tooltip, Legend);
 
 function App() {
+  
   const [learningRate, setLearningRate] = useState(0.01);
   const [iterations, setIterations] = useState(200);
   const [degree, setDegree] = useState(1);
+  const [lambda, setLambda] = useState(0);
   const [weights, setWeights] = useState([0, 0]);
   const [trainLoss, setTrainLoss] = useState(0);
   const [testLoss, setTestLoss] = useState(0);
@@ -59,9 +61,11 @@ function App() {
       });
 
       for (let d = 0; d <= degree; d++) {
-        newWeights[d] -=
-          (learningRate * gradients[d]) / trainData.length;
-      }
+  const regularizationTerm = lambda * newWeights[d];
+  newWeights[d] -=
+    (learningRate *
+      (gradients[d] / trainData.length + regularizationTerm));
+}
     }
 
     // Training Loss
@@ -144,85 +148,144 @@ function App() {
   };
 
   return (
-    <div style={{ textAlign: "center", padding: "30px" }}>
-      <h1>ML Learning Sandbox</h1>
-      <p>Interactive Overfitting Simulator</p>
-
-      <div style={{ margin: "20px" }}>
-        <label>Learning Rate: {learningRate}</label>
-        <br />
-        <input
-          type="range"
-          min="0.0001"
-          max="0.01"
-          step="0.0001"
-          value={learningRate}
-          onChange={(e) => setLearningRate(Number(e.target.value))}
-        />
-      </div>
-
-      <div style={{ margin: "20px" }}>
-        <label>Iterations: {iterations}</label>
-        <br />
-        <input
-          type="range"
-          min="10"
-          max="500"
-          step="10"
-          value={iterations}
-          onChange={(e) => setIterations(Number(e.target.value))}
-        />
-      </div>
-
-      <div style={{ margin: "20px" }}>
-        <label>Model Complexity (Degree): {degree}</label>
-        <br />
-        <input
-          type="range"
-          min="1"
-          max="8"
-          step="1"
-          value={degree}
-          onChange={(e) => setDegree(Number(e.target.value))}
-        />
-      </div>
-
-      <button
-        onClick={trainModel}
-        style={{ padding: "10px 20px", marginBottom: "20px" }}
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#f4f6f9",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <div
+        style={{
+          background: "white",
+          padding: "40px",
+          borderRadius: "12px",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+          width: "100%",
+          maxWidth: "900px",
+          textAlign: "center",
+        }}
       >
-        Train Model
-      </button>
+        <h1>ML Learning Sandbox</h1>
+        <p>Interactive Overfitting Simulator</p>
 
-      <button
-        onClick={regenerateData}
-        style={{ padding: "10px 20px", marginBottom: "20px", marginLeft: "10px" }}
-      >
-        Generate New Dataset
-      </button>
+        <div style={{ margin: "20px" }}>
+          <label>Learning Rate: {learningRate}</label>
+          <br />
+          <input
+            type="range"
+            min="0.0001"
+            max="0.01"
+            step="0.0001"
+            value={learningRate}
+            onChange={(e) => setLearningRate(Number(e.target.value))}
+          />
+        </div>
 
-      <div style={{ width: "70%", margin: "auto" }}>
-        <Line data={chartData} options={options} />
-      </div>
+        <div style={{ margin: "20px" }}>
+          <label>Iterations: {iterations}</label>
+          <br />
+          <input
+            type="range"
+            min="10"
+            max="500"
+            step="10"
+            value={iterations}
+            onChange={(e) => setIterations(Number(e.target.value))}
+          />
+        </div>
 
-      <div style={{ marginTop: "20px" }}>
-        <p>
-          Current Model:{" "}
-          {weights.map((w, i) => `${w.toFixed(2)}x^${i}`).join(" + ")}
-        </p>
-        <p>Training Loss: {trainLoss.toFixed(2)}</p>
-        <p>Test Loss: {testLoss.toFixed(2)}</p>
+        <div style={{ margin: "20px" }}>
+          <label>Model Complexity (Degree): {degree}</label>
+          <br />
+          <input
+            type="range"
+            min="1"
+            max="8"
+            step="1"
+            value={degree}
+            onChange={(e) => setDegree(Number(e.target.value))}
+          />
+        </div>
 
-        <div style={{ fontWeight: "bold", marginTop: "10px" }}>
-          {isOverfitting ? (
-            <span style={{ color: "red" }}>
-              ⚠️ Model is Overfitting
-            </span>
-          ) : (
-            <span style={{ color: "green" }}>
-              ✅ Model is Generalizing Well
-            </span>
-          )}
+        <div style={{ margin: "20px" }}>
+  <label>Regularization (λ): {lambda}</label>
+  <br />
+  <input
+    type="range"
+    min="0"
+    max="1"
+    step="0.01"
+    value={lambda}
+    onChange={(e) => setLambda(Number(e.target.value))}
+  />
+</div>
+
+        <button
+          onClick={trainModel}
+          style={{ padding: "10px 20px", marginBottom: "20px" }}
+        >
+          Train Model
+        </button>
+
+        <button
+          onClick={regenerateData}
+          style={{
+            padding: "10px 20px",
+            marginBottom: "20px",
+            marginLeft: "10px",
+          }}
+        >
+          Generate New Dataset
+        </button>
+
+        <div style={{ width: "100%", margin: "auto" }}>
+          <Line data={chartData} options={options} />
+        </div>
+
+        <div style={{ marginTop: "20px" }}>
+          <p>
+            Current Model:{" "}
+            {weights.map((w, i) => `${w.toFixed(2)}x^${i}`).join(" + ")}
+          </p>
+          <p>Training Loss: {trainLoss.toFixed(2)}</p>
+          <p>Test Loss: {testLoss.toFixed(2)}</p>
+
+          <div style={{ fontWeight: "bold", marginTop: "10px" }}>
+            {isOverfitting ? (
+              <span style={{ color: "red" }}>
+                ⚠️ Model is Overfitting
+              </span>
+            ) : (
+              <span style={{ color: "green" }}>
+                ✅ Model is Generalizing Well
+              </span>
+            )}
+          </div>
+
+          <div
+            style={{
+              marginTop: "15px",
+              maxWidth: "600px",
+              marginInline: "auto",
+            }}
+          >
+            {isOverfitting ? (
+              <p style={{ color: "#b00020" }}>
+                High model complexity causes memorization of training data.
+                Performance drops on unseen test data.
+                This is <b>Overfitting (High Variance)</b>.
+              </p>
+            ) : (
+              <p style={{ color: "#0a7a0a" }}>
+                The model balances bias and variance properly.
+                Similar performance on training and test data.
+                This indicates good <b>Generalization</b>.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
