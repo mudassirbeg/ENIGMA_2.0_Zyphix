@@ -33,10 +33,10 @@ function App() {
   const [testLoss, setTestLoss] = useState(0);
   const [lossHistory, setLossHistory] = useState([]);
   const [isTraining, setIsTraining] = useState(false);
-  const [showTheory, setShowTheory] = useState(false);
   const [experiments, setExperiments] = useState([]);
+  const [showArchitecture, setShowArchitecture] = useState(false);
 
-  // Generate dataset
+  // Generate Dataset
   const generateDataset = () => {
     const allPoints = Array.from({ length: 20 }, (_, i) => {
       const x = i;
@@ -59,7 +59,6 @@ function App() {
     if (isTraining) return;
 
     setIsTraining(true);
-
     let newWeights = Array(degree + 1).fill(0);
     let history = [];
     let currentIteration = 0;
@@ -273,7 +272,6 @@ function App() {
           </>
         )}
 
-        {/* Experiment Table */}
         {experiments.length > 0 && (
           <>
             <h3>Experiment History</h3>
@@ -302,6 +300,24 @@ function App() {
               </tbody>
             </table>
           </>
+        )}
+
+        <button
+          onClick={() => setShowArchitecture(!showArchitecture)}
+          style={{ marginTop: "20px" }}
+        >
+          {showArchitecture ? "Hide Architecture" : "Show Architecture Diagram"}
+        </button>
+
+        {showArchitecture && (
+          <div style={{ marginTop: "20px", background: "#f9f9f9", padding: "20px", borderRadius: "8px" }}>
+            <h3>System Architecture</h3>
+            <p><b>1️⃣ User Controls</b> → Sliders adjust ML parameters.</p>
+            <p><b>2️⃣ Data Engine</b> → Generates synthetic dataset.</p>
+            <p><b>3️⃣ ML Engine</b> → Polynomial regression + gradient descent.</p>
+            <p><b>4️⃣ Evaluation</b> → Computes train/test MSE.</p>
+            <p><b>5️⃣ Visualization</b> → Charts display model and loss.</p>
+          </div>
         )}
       </div>
     </div>
