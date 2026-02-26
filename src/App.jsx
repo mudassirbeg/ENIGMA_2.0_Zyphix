@@ -41,6 +41,7 @@ function App() {
   const [dataset, setDataset] = useState(generateDataset());
   const { trainData, testData } = dataset;
 
+  // Training Function
   const trainModel = () => {
     let newWeights = Array(degree + 1).fill(0);
 
@@ -115,6 +116,14 @@ function App() {
   });
 
   const isOverfitting = testLoss > trainLoss * 1.2;
+  const isUnderfitting = trainLoss > 20 && testLoss > 20;
+
+  let modelState = "Balanced";
+  if (isUnderfitting) {
+    modelState = "High Bias (Underfitting)";
+  } else if (isOverfitting) {
+    modelState = "High Variance (Overfitting)";
+  }
 
   const chartData = {
     datasets: [
@@ -238,26 +247,19 @@ function App() {
         </div>
 
         {/* Buttons */}
-        <button
-          onClick={trainModel}
-          style={{ padding: "10px 20px", marginBottom: "20px" }}
-        >
+        <button onClick={trainModel} style={{ padding: "10px 20px" }}>
           Train Model
         </button>
 
         <button
           onClick={regenerateData}
-          style={{
-            padding: "10px 20px",
-            marginBottom: "20px",
-            marginLeft: "10px",
-          }}
+          style={{ padding: "10px 20px", marginLeft: "10px" }}
         >
           Generate New Dataset
         </button>
 
         {/* Chart */}
-        <div style={{ width: "100%", margin: "auto" }}>
+        <div style={{ width: "100%", marginTop: "20px" }}>
           <Line data={chartData} options={options} />
         </div>
 
@@ -270,17 +272,8 @@ function App() {
           <p>Training Loss: {trainLoss.toFixed(2)}</p>
           <p>Test Loss: {testLoss.toFixed(2)}</p>
 
-          <div style={{ fontWeight: "bold", marginTop: "10px" }}>
-            {isOverfitting ? (
-              <span style={{ color: "red" }}>
-                ⚠️ Model is Overfitting
-              </span>
-            ) : (
-              <span style={{ color: "green" }}>
-                ✅ Model is Generalizing Well
-              </span>
-            )}
-          </div>
+          <h3 style={{ marginTop: "15px" }}>Bias–Variance Analysis</h3>
+          <p style={{ fontWeight: "bold" }}>Model State: {modelState}</p>
         </div>
       </div>
     </div>
