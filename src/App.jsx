@@ -33,6 +33,7 @@ function App() {
   const [testLoss, setTestLoss] = useState(0);
   const [lossHistory, setLossHistory] = useState([]);
   const [isTraining, setIsTraining] = useState(false);
+  const [showTheory, setShowTheory] = useState(false);
 
   // Generate Dataset
   const generateDataset = () => {
@@ -85,7 +86,6 @@ function App() {
           (gradients[d] / trainData.length + regularizationTerm);
       }
 
-      // Calculate training loss this iteration
       let iterationLoss = 0;
       trainData.forEach((point) => {
         let prediction = 0;
@@ -201,7 +201,7 @@ function App() {
         background: "#f4f6f9",
         display: "flex",
         justifyContent: "center",
-        alignItems: "center",
+        padding: "40px",
       }}
     >
       <div
@@ -220,82 +220,50 @@ function App() {
 
         {/* Controls */}
         <div style={{ margin: "20px" }}>
-          <label>Learning Rate: {learningRate}</label>
-          <br />
-          <input
-            type="range"
-            min="0.0001"
-            max="0.01"
-            step="0.0001"
+          <label>Learning Rate: {learningRate}</label><br />
+          <input type="range" min="0.0001" max="0.01" step="0.0001"
             value={learningRate}
             onChange={(e) => setLearningRate(Number(e.target.value))}
           />
         </div>
 
         <div style={{ margin: "20px" }}>
-          <label>Iterations: {iterations}</label>
-          <br />
-          <input
-            type="range"
-            min="10"
-            max="500"
-            step="10"
+          <label>Iterations: {iterations}</label><br />
+          <input type="range" min="10" max="500" step="10"
             value={iterations}
             onChange={(e) => setIterations(Number(e.target.value))}
           />
         </div>
 
         <div style={{ margin: "20px" }}>
-          <label>Model Complexity (Degree): {degree}</label>
-          <br />
-          <input
-            type="range"
-            min="1"
-            max="8"
-            step="1"
+          <label>Model Complexity (Degree): {degree}</label><br />
+          <input type="range" min="1" max="8" step="1"
             value={degree}
             onChange={(e) => setDegree(Number(e.target.value))}
           />
         </div>
 
         <div style={{ margin: "20px" }}>
-          <label>Regularization (λ): {lambda}</label>
-          <br />
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
+          <label>Regularization (λ): {lambda}</label><br />
+          <input type="range" min="0" max="1" step="0.01"
             value={lambda}
             onChange={(e) => setLambda(Number(e.target.value))}
           />
         </div>
 
         <div style={{ margin: "20px" }}>
-          <label>Noise Level: {noiseLevel}</label>
-          <br />
-          <input
-            type="range"
-            min="0"
-            max="30"
-            step="1"
+          <label>Noise Level: {noiseLevel}</label><br />
+          <input type="range" min="0" max="30" step="1"
             value={noiseLevel}
             onChange={(e) => setNoiseLevel(Number(e.target.value))}
           />
         </div>
 
-        <button
-          onClick={trainModel}
-          disabled={isTraining}
-          style={{ padding: "10px 20px" }}
-        >
+        <button onClick={trainModel} disabled={isTraining}>
           {isTraining ? "Training..." : "Train Model"}
         </button>
 
-        <button
-          onClick={regenerateData}
-          style={{ padding: "10px 20px", marginLeft: "10px" }}
-        >
+        <button onClick={regenerateData} style={{ marginLeft: "10px" }}>
           Generate New Dataset
         </button>
 
@@ -317,10 +285,53 @@ function App() {
           </p>
           <p>Training Loss: {trainLoss.toFixed(2)}</p>
           <p>Test Loss: {testLoss.toFixed(2)}</p>
-
           <h3>Bias–Variance Analysis</h3>
           <p style={{ fontWeight: "bold" }}>{modelState}</p>
         </div>
+
+        {/* Explanation Toggle */}
+        <button
+          onClick={() => setShowTheory(!showTheory)}
+          style={{ marginTop: "20px" }}
+        >
+          {showTheory ? "Hide Explanation" : "Show ML Explanation"}
+        </button>
+
+        {showTheory && (
+          <div
+            style={{
+              marginTop: "20px",
+              textAlign: "left",
+              background: "#f9f9f9",
+              padding: "20px",
+              borderRadius: "8px",
+            }}
+          >
+            <h3>📘 Gradient Descent</h3>
+            <p>
+              Gradient Descent minimizes error by updating weights step-by-step
+              in the direction that reduces loss.
+            </p>
+
+            <h3>📘 Overfitting</h3>
+            <p>
+              Overfitting occurs when the model performs well on training data
+              but poorly on test data.
+            </p>
+
+            <h3>📘 Regularization</h3>
+            <p>
+              Regularization penalizes large weights to reduce model complexity
+              and prevent overfitting.
+            </p>
+
+            <h3>📘 Bias–Variance Tradeoff</h3>
+            <p>
+              High bias leads to underfitting, high variance leads to
+              overfitting. A balanced model generalizes well.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
