@@ -1,0 +1,5 @@
+[33m74549ac[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m feat: add noise level control and fix UI structure
+[33m817bf65[m feat: add L2 regularization (ridge regression) to reduce overfitting
+[33md1b397e[m[33m ([m[1;31morigin/main[m[33m)[m update: improve model display and overfitting indicator
+[33m8d095bf[m resolve merge conflict in README
+[33mbbad427[m feat: add iteration and learning rate sliders
