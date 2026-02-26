@@ -175,9 +175,9 @@ function App() {
         style={{
           padding: "25px",
           textAlign: "center",
-          fontSize: "26px",
+          fontSize: "40px",
           fontWeight: "600",
-          color: "white",
+          color: "yellow",
           letterSpacing: "1px",
         }}
       >
