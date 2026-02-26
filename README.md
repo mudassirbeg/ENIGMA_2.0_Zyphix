@@ -1,21 +1,29 @@
-<<<<<<< HEAD
-# React + Vite
+# ENIGMA 2.0 – Zyphix
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive Machine Learning Learning Sandbox built using React and Vite.
 
-Currently, two official plugins are available:
+This platform allows students to visually experiment with core ML concepts such as:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Gradient Descent
+- Learning Rate Adjustment
+- Iterations Control
+- Model Training Behavior
+- Overfitting Simulation
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Interactive sliders for learning rate and iterations
+- Real-time visualization of model training
+- Beginner-friendly interface
+- No heavy ML setup required
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-=======
-# ENIGMA_2.0_Zyphix
-An educational ML sandbox that allows users to experiment with machine learning algorithms visually and understand model training behavior in real time.
->>>>>>> 5fabf520b9c32994a25c8fd2c4b0b673d53bfb27
+- React
+- Vite
+- JavaScript
+- HTML/CSS
+
+## Purpose
+
+To make machine learning concepts easier to understand through visual simulation instead of theory alone.
