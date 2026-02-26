@@ -27,16 +27,9 @@ function App() {
   const [degree, setDegree] = useState(1);
   const [lambda, setLambda] = useState(0);
   const [noiseLevel, setNoiseLevel] = useState(10);
-
   const [weights, setWeights] = useState([0, 0]);
-  const [trainLoss, setTrainLoss] = useState(0);
-  const [testLoss, setTestLoss] = useState(0);
   const [lossHistory, setLossHistory] = useState([]);
-  const [isTraining, setIsTraining] = useState(false);
-  const [experiments, setExperiments] = useState([]);
-  const [showArchitecture, setShowArchitecture] = useState(false);
 
-  // Generate Dataset
   const generateDataset = () => {
     const allPoints = Array.from({ length: 20 }, (_, i) => {
       const x = i;
@@ -56,14 +49,10 @@ function App() {
   const { trainData, testData } = dataset;
 
   const trainModel = () => {
-    if (isTraining) return;
-
-    setIsTraining(true);
     let newWeights = Array(degree + 1).fill(0);
     let history = [];
-    let currentIteration = 0;
 
-    const interval = setInterval(() => {
+    for (let iter = 0; iter < iterations; iter++) {
       let gradients = Array(degree + 1).fill(0);
 
       trainData.forEach((point) => {
@@ -80,75 +69,30 @@ function App() {
       });
 
       for (let d = 0; d <= degree; d++) {
-        const regularizationTerm = lambda * newWeights[d];
         newWeights[d] -=
           learningRate *
-          (gradients[d] / trainData.length + regularizationTerm);
+          (gradients[d] / trainData.length + lambda * newWeights[d]);
       }
 
-      let iterationLoss = 0;
+      let loss = 0;
       trainData.forEach((point) => {
         let prediction = 0;
         for (let d = 0; d <= degree; d++) {
           prediction += newWeights[d] * Math.pow(point.x, d);
         }
-        iterationLoss += Math.pow(prediction - point.y, 2);
+        loss += Math.pow(prediction - point.y, 2);
       });
 
-      history.push(iterationLoss / trainData.length);
+      history.push(loss / trainData.length);
+    }
 
-      setWeights([...newWeights]);
-      setLossHistory([...history]);
-
-      currentIteration++;
-
-      if (currentIteration >= iterations) {
-        clearInterval(interval);
-
-        const finalTrainLoss = history[history.length - 1];
-
-        let totalTestError = 0;
-        testData.forEach((point) => {
-          let prediction = 0;
-          for (let d = 0; d <= degree; d++) {
-            prediction += newWeights[d] * Math.pow(point.x, d);
-          }
-          totalTestError += Math.pow(prediction - point.y, 2);
-        });
-
-        const finalTestLoss = totalTestError / testData.length;
-
-        setTrainLoss(finalTrainLoss);
-        setTestLoss(finalTestLoss);
-        setIsTraining(false);
-
-        const isOverfitting = finalTestLoss > finalTrainLoss * 1.2;
-        const isUnderfitting = finalTrainLoss > 20 && finalTestLoss > 20;
-
-        let state = "Balanced";
-        if (isUnderfitting) state = "High Bias (Underfitting)";
-        else if (isOverfitting) state = "High Variance (Overfitting)";
-
-        setExperiments((prev) => [
-          ...prev,
-          {
-            degree,
-            lambda,
-            learningRate,
-            trainLoss: finalTrainLoss,
-            testLoss: finalTestLoss,
-            state,
-          },
-        ]);
-      }
-    }, 30);
+    setWeights(newWeights);
+    setLossHistory(history);
   };
 
   const regenerateData = () => {
     setDataset(generateDataset());
     setWeights(Array(degree + 1).fill(0));
-    setTrainLoss(0);
-    setTestLoss(0);
     setLossHistory([]);
   };
 
@@ -167,19 +111,19 @@ function App() {
       {
         label: "Train Data",
         data: trainData,
-        backgroundColor: "blue",
+        backgroundColor: "#2563eb",
         showLine: false,
       },
       {
         label: "Test Data",
         data: testData,
-        backgroundColor: "green",
+        backgroundColor: "#16a34a",
         showLine: false,
       },
       {
         label: "Model Curve",
         data: lineData,
-        borderColor: "red",
+        borderColor: "#dc2626",
         borderWidth: 2,
         fill: false,
       },
@@ -192,7 +136,7 @@ function App() {
       {
         label: "Training Loss",
         data: lossHistory,
-        borderColor: "purple",
+        borderColor: "#7c3aed",
         borderWidth: 2,
         fill: false,
       },
@@ -200,125 +144,97 @@ function App() {
   };
 
   return (
-    <div style={{ padding: "40px", background: "#f4f6f9", minHeight: "100vh" }}>
-      <div
-        style={{
-          background: "white",
-          padding: "40px",
-          borderRadius: "12px",
-          maxWidth: "900px",
-          margin: "auto",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-        }}
-      >
-        <h1>ML Learning Sandbox</h1>
-        <p>Interactive Animated Gradient Descent Simulator</p>
+    <div style={{
+      width: "100vw",
+      height: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      background: "#f3f4f6"
+    }}>
+      
+      {/* HEADER */}
+      <div style={{
+        height: "70px",
+        background: "#111827",
+        color: "white",
+        display: "flex",
+        alignItems: "center",
+        paddingLeft: "30px",
+        fontSize: "22px",
+        fontWeight: "bold"
+      }}>
+        ML Learning Sandbox — Full Stack ML Simulator
+      </div>
 
-        {/* Controls */}
-        <div>
-          <label>Learning Rate: {learningRate}</label><br />
+      {/* CONTENT */}
+      <div style={{ flex: 1, display: "flex" }}>
+
+        {/* LEFT PANEL */}
+        <div style={{
+          width: "350px",
+          background: "white",
+          padding: "20px",
+          borderRight: "1px solid #e5e7eb"
+        }}>
+          <h3>Controls</h3>
+
+          <label>Learning Rate: {learningRate}</label>
           <input type="range" min="0.0001" max="0.01" step="0.0001"
             value={learningRate}
             onChange={(e) => setLearningRate(Number(e.target.value))}
           />
-        </div>
 
-        <div>
-          <label>Iterations: {iterations}</label><br />
+          <label>Iterations: {iterations}</label>
           <input type="range" min="10" max="500" step="10"
             value={iterations}
             onChange={(e) => setIterations(Number(e.target.value))}
           />
-        </div>
 
-        <div>
-          <label>Model Degree: {degree}</label><br />
+          <label>Degree: {degree}</label>
           <input type="range" min="1" max="8" step="1"
             value={degree}
             onChange={(e) => setDegree(Number(e.target.value))}
           />
-        </div>
 
-        <div>
-          <label>Regularization (λ): {lambda}</label><br />
+          <label>Regularization (λ): {lambda}</label>
           <input type="range" min="0" max="1" step="0.01"
             value={lambda}
             onChange={(e) => setLambda(Number(e.target.value))}
           />
-        </div>
 
-        <div>
-          <label>Noise Level: {noiseLevel}</label><br />
+          <label>Noise Level: {noiseLevel}</label>
           <input type="range" min="0" max="30" step="1"
             value={noiseLevel}
             onChange={(e) => setNoiseLevel(Number(e.target.value))}
           />
+
+          <button onClick={trainModel} style={{ width: "100%", marginTop: "15px" }}>
+            Train Model
+          </button>
+
+          <button onClick={regenerateData} style={{ width: "100%", marginTop: "10px" }}>
+            Generate Dataset
+          </button>
         </div>
 
-        <button onClick={trainModel} disabled={isTraining}>
-          {isTraining ? "Training..." : "Train Model"}
-        </button>
-
-        <button onClick={regenerateData} style={{ marginLeft: "10px" }}>
-          Generate New Dataset
-        </button>
-
-        <Line data={chartData} />
-
-        {lossHistory.length > 0 && (
-          <>
-            <h3>Loss vs Iterations</h3>
-            <Line data={lossChartData} />
-          </>
-        )}
-
-        {experiments.length > 0 && (
-          <>
-            <h3>Experiment History</h3>
-            <table border="1" width="100%">
-              <thead>
-                <tr>
-                  <th>Degree</th>
-                  <th>Lambda</th>
-                  <th>LR</th>
-                  <th>Train Loss</th>
-                  <th>Test Loss</th>
-                  <th>Result</th>
-                </tr>
-              </thead>
-              <tbody>
-                {experiments.map((exp, i) => (
-                  <tr key={i}>
-                    <td>{exp.degree}</td>
-                    <td>{exp.lambda}</td>
-                    <td>{exp.learningRate}</td>
-                    <td>{exp.trainLoss.toFixed(2)}</td>
-                    <td>{exp.testLoss.toFixed(2)}</td>
-                    <td>{exp.state}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </>
-        )}
-
-        <button
-          onClick={() => setShowArchitecture(!showArchitecture)}
-          style={{ marginTop: "20px" }}
-        >
-          {showArchitecture ? "Hide Architecture" : "Show Architecture Diagram"}
-        </button>
-
-        {showArchitecture && (
-          <div style={{ marginTop: "20px", background: "#f9f9f9", padding: "20px", borderRadius: "8px" }}>
-            <h3>System Architecture</h3>
-            <p><b>1️⃣ User Controls</b> → Sliders adjust ML parameters.</p>
-            <p><b>2️⃣ Data Engine</b> → Generates synthetic dataset.</p>
-            <p><b>3️⃣ ML Engine</b> → Polynomial regression + gradient descent.</p>
-            <p><b>4️⃣ Evaluation</b> → Computes train/test MSE.</p>
-            <p><b>5️⃣ Visualization</b> → Charts display model and loss.</p>
+        {/* RIGHT PANEL */}
+        <div style={{
+          flex: 1,
+          padding: "30px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "30px"
+        }}>
+          <div style={{ flex: 1 }}>
+            <Line data={chartData} options={{ responsive: true, maintainAspectRatio: false }} />
           </div>
-        )}
+
+          {lossHistory.length > 0 && (
+            <div style={{ flex: 1 }}>
+              <Line data={lossChartData} options={{ responsive: true, maintainAspectRatio: false }} />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
