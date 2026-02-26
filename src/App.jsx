@@ -34,8 +34,9 @@ function App() {
   const [lossHistory, setLossHistory] = useState([]);
   const [isTraining, setIsTraining] = useState(false);
   const [showTheory, setShowTheory] = useState(false);
+  const [experiments, setExperiments] = useState([]);
 
-  // Generate Dataset
+  // Generate dataset
   const generateDataset = () => {
     const allPoints = Array.from({ length: 20 }, (_, i) => {
       const x = i;
@@ -121,6 +122,25 @@ function App() {
         setTrainLoss(finalTrainLoss);
         setTestLoss(finalTestLoss);
         setIsTraining(false);
+
+        const isOverfitting = finalTestLoss > finalTrainLoss * 1.2;
+        const isUnderfitting = finalTrainLoss > 20 && finalTestLoss > 20;
+
+        let state = "Balanced";
+        if (isUnderfitting) state = "High Bias (Underfitting)";
+        else if (isOverfitting) state = "High Variance (Overfitting)";
+
+        setExperiments((prev) => [
+          ...prev,
+          {
+            degree,
+            lambda,
+            learningRate,
+            trainLoss: finalTrainLoss,
+            testLoss: finalTestLoss,
+            state,
+          },
+        ]);
       }
     }, 30);
   };
@@ -142,13 +162,6 @@ function App() {
     }
     return { x: point.x, y: yValue };
   });
-
-  const isOverfitting = testLoss > trainLoss * 1.2;
-  const isUnderfitting = trainLoss > 20 && testLoss > 20;
-
-  let modelState = "Balanced";
-  if (isUnderfitting) modelState = "High Bias (Underfitting)";
-  else if (isOverfitting) modelState = "High Variance (Overfitting)";
 
   const chartData = {
     datasets: [
@@ -178,7 +191,7 @@ function App() {
     labels: lossHistory.map((_, i) => i + 1),
     datasets: [
       {
-        label: "Training Loss Over Iterations",
+        label: "Training Loss",
         data: lossHistory,
         borderColor: "purple",
         borderWidth: 2,
@@ -187,39 +200,23 @@ function App() {
     ],
   };
 
-  const options = {
-    responsive: true,
-    scales: {
-      x: { type: "linear", position: "bottom" },
-    },
-  };
-
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#f4f6f9",
-        display: "flex",
-        justifyContent: "center",
-        padding: "40px",
-      }}
-    >
+    <div style={{ padding: "40px", background: "#f4f6f9", minHeight: "100vh" }}>
       <div
         style={{
           background: "white",
           padding: "40px",
           borderRadius: "12px",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-          width: "100%",
           maxWidth: "900px",
-          textAlign: "center",
+          margin: "auto",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
         }}
       >
         <h1>ML Learning Sandbox</h1>
         <p>Interactive Animated Gradient Descent Simulator</p>
 
         {/* Controls */}
-        <div style={{ margin: "20px" }}>
+        <div>
           <label>Learning Rate: {learningRate}</label><br />
           <input type="range" min="0.0001" max="0.01" step="0.0001"
             value={learningRate}
@@ -227,7 +224,7 @@ function App() {
           />
         </div>
 
-        <div style={{ margin: "20px" }}>
+        <div>
           <label>Iterations: {iterations}</label><br />
           <input type="range" min="10" max="500" step="10"
             value={iterations}
@@ -235,15 +232,15 @@ function App() {
           />
         </div>
 
-        <div style={{ margin: "20px" }}>
-          <label>Model Complexity (Degree): {degree}</label><br />
+        <div>
+          <label>Model Degree: {degree}</label><br />
           <input type="range" min="1" max="8" step="1"
             value={degree}
             onChange={(e) => setDegree(Number(e.target.value))}
           />
         </div>
 
-        <div style={{ margin: "20px" }}>
+        <div>
           <label>Regularization (λ): {lambda}</label><br />
           <input type="range" min="0" max="1" step="0.01"
             value={lambda}
@@ -251,7 +248,7 @@ function App() {
           />
         </div>
 
-        <div style={{ margin: "20px" }}>
+        <div>
           <label>Noise Level: {noiseLevel}</label><br />
           <input type="range" min="0" max="30" step="1"
             value={noiseLevel}
@@ -267,70 +264,44 @@ function App() {
           Generate New Dataset
         </button>
 
-        <div style={{ marginTop: "30px" }}>
-          <Line data={chartData} options={options} />
-        </div>
+        <Line data={chartData} />
 
         {lossHistory.length > 0 && (
-          <div style={{ marginTop: "40px" }}>
+          <>
             <h3>Loss vs Iterations</h3>
             <Line data={lossChartData} />
-          </div>
+          </>
         )}
 
-        <div style={{ marginTop: "20px" }}>
-          <p>
-            Current Model:{" "}
-            {weights.map((w, i) => `${w.toFixed(2)}x^${i}`).join(" + ")}
-          </p>
-          <p>Training Loss: {trainLoss.toFixed(2)}</p>
-          <p>Test Loss: {testLoss.toFixed(2)}</p>
-          <h3>Bias–Variance Analysis</h3>
-          <p style={{ fontWeight: "bold" }}>{modelState}</p>
-        </div>
-
-        {/* Explanation Toggle */}
-        <button
-          onClick={() => setShowTheory(!showTheory)}
-          style={{ marginTop: "20px" }}
-        >
-          {showTheory ? "Hide Explanation" : "Show ML Explanation"}
-        </button>
-
-        {showTheory && (
-          <div
-            style={{
-              marginTop: "20px",
-              textAlign: "left",
-              background: "#f9f9f9",
-              padding: "20px",
-              borderRadius: "8px",
-            }}
-          >
-            <h3>📘 Gradient Descent</h3>
-            <p>
-              Gradient Descent minimizes error by updating weights step-by-step
-              in the direction that reduces loss.
-            </p>
-
-            <h3>📘 Overfitting</h3>
-            <p>
-              Overfitting occurs when the model performs well on training data
-              but poorly on test data.
-            </p>
-
-            <h3>📘 Regularization</h3>
-            <p>
-              Regularization penalizes large weights to reduce model complexity
-              and prevent overfitting.
-            </p>
-
-            <h3>📘 Bias–Variance Tradeoff</h3>
-            <p>
-              High bias leads to underfitting, high variance leads to
-              overfitting. A balanced model generalizes well.
-            </p>
-          </div>
+        {/* Experiment Table */}
+        {experiments.length > 0 && (
+          <>
+            <h3>Experiment History</h3>
+            <table border="1" width="100%">
+              <thead>
+                <tr>
+                  <th>Degree</th>
+                  <th>Lambda</th>
+                  <th>LR</th>
+                  <th>Train Loss</th>
+                  <th>Test Loss</th>
+                  <th>Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                {experiments.map((exp, i) => (
+                  <tr key={i}>
+                    <td>{exp.degree}</td>
+                    <td>{exp.lambda}</td>
+                    <td>{exp.learningRate}</td>
+                    <td>{exp.trainLoss.toFixed(2)}</td>
+                    <td>{exp.testLoss.toFixed(2)}</td>
+                    <td>{exp.state}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
         )}
       </div>
     </div>
