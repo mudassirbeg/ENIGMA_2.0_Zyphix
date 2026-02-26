@@ -145,117 +145,170 @@ function App() {
     ],
   };
 
-  return (
+ return (
+  <div
+    style={{
+      height: "100vh",
+      width: "100vw",
+      display: "grid",
+      gridTemplateRows: "70px 1fr",
+      background: "linear-gradient(135deg, #eef2ff, #fdf4ff)",
+      fontFamily: "system-ui",
+    }}
+  >
+    {/* HEADER */}
     <div
       style={{
-        width: "100vw",
-        height: "100vh",
+        background: "linear-gradient(90deg, #4f46e5, #7c3aed)",
+        color: "white",
         display: "flex",
-        flexDirection: "column",
-        background: "#f3f4f6",
+        alignItems: "center",
+        justifyContent: "center",
+        
+        fontSize: "30px",
+        fontWeight: "600",
+        letterSpacing: "0.5px",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
       }}
     >
-      {/* HEADER */}
+      ML Learning Sandbox — Interactive ML Dashboard
+    </div>
+
+    {/* MAIN GRID */}
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "360px 1fr",
+        gap: "25px",
+        padding: "25px",
+      }}
+    >
+      {/* LEFT PANEL */}
       <div
         style={{
-          height: "70px",
-          background: "#111827",
-          color: "white",
+          background: "rgba(255,255,255,0.9)",
+          backdropFilter: "blur(10px)",
+          borderRadius: "16px",
+          padding: "25px",
+          boxShadow: "0 15px 40px rgba(0,0,0,0.08)",
           display: "flex",
-          alignItems: "center",
-          paddingLeft: "30px",
-          fontSize: "22px",
-          fontWeight: "bold",
+          flexDirection: "column",
+          gap: "20px",
         }}
       >
-        ML Learning Sandbox — Gradient Descent Simulator
-      </div>
+        <h3 style={{ margin: 0, color: "#4f46e5" }}>Model Controls</h3>
 
-      {/* MAIN */}
-      <div style={{ flex: 1, display: "flex" }}>
-        {/* LEFT PANEL */}
-        <div
+        {/* SLIDERS */}
+        {[
+          { label: "Learning Rate", value: learningRate },
+          { label: "Iterations", value: iterations },
+          { label: "Degree", value: degree },
+          { label: "Regularization (λ)", value: lambda },
+          { label: "Noise Level", value: noiseLevel },
+        ].map((item, i) => (
+          <div key={i}>
+            <label style={{ fontSize: "14px", fontWeight: 500 }}>
+              {item.label}: <span style={{ color: "#7c3aed" }}>{item.value}</span>
+            </label>
+            <input
+              type="range"
+              style={{ width: "100%", accentColor: "#7c3aed" }}
+              min={
+                i === 0 ? "0.0001" :
+                i === 1 ? "10" :
+                i === 2 ? "1" :
+                i === 3 ? "0" : "0"
+              }
+              max={
+                i === 0 ? "0.01" :
+                i === 1 ? "500" :
+                i === 2 ? "8" :
+                i === 3 ? "1" : "30"
+              }
+              step={
+                i === 0 ? "0.0001" :
+                i === 1 ? "10" :
+                i === 2 ? "1" :
+                i === 3 ? "0.01" : "1"
+              }
+              value={item.value}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                if (i === 0) setLearningRate(val);
+                if (i === 1) setIterations(val);
+                if (i === 2) setDegree(val);
+                if (i === 3) setLambda(val);
+                if (i === 4) setNoiseLevel(val);
+              }}
+            />
+          </div>
+        ))}
+
+        {/* BUTTONS */}
+        <button
+          onClick={trainModel}
           style={{
-            width: "350px",
-            background: "white",
-            padding: "20px",
-            borderRight: "1px solid #e5e7eb",
+            padding: "12px",
+            background: "linear-gradient(90deg, #4f46e5, #7c3aed)",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontWeight: 600,
+            boxShadow: "0 8px 20px rgba(124,58,237,0.4)",
+            transition: "0.2s",
           }}
         >
-          <h3>Controls</h3>
+          Train Model
+        </button>
 
-          <label>Learning Rate: {learningRate}</label>
-          <input
-            type="range"
-            min="0.0001"
-            max="0.01"
-            step="0.0001"
-            value={learningRate}
-            onChange={(e) => setLearningRate(Number(e.target.value))}
-          />
+        <button
+          onClick={regenerateData}
+          style={{
+            padding: "12px",
+            background: "#e5e7eb",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontWeight: 600,
+            boxShadow: "0 6px 15px rgba(0,0,0,0.05)",
+          }}
+        >
+          Generate Dataset
+        </button>
 
-          <label>Iterations: {iterations}</label>
-          <input
-            type="range"
-            min="10"
-            max="500"
-            step="10"
-            value={iterations}
-            onChange={(e) => setIterations(Number(e.target.value))}
-          />
-
-          <label>Degree: {degree}</label>
-          <input
-            type="range"
-            min="1"
-            max="8"
-            step="1"
-            value={degree}
-            onChange={(e) => setDegree(Number(e.target.value))}
-          />
-
-          <label>Regularization (λ): {lambda}</label>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={lambda}
-            onChange={(e) => setLambda(Number(e.target.value))}
-          />
-
-          <label>Noise Level: {noiseLevel}</label>
-          <input
-            type="range"
-            min="0"
-            max="30"
-            step="1"
-            value={noiseLevel}
-            onChange={(e) => setNoiseLevel(Number(e.target.value))}
-          />
-
-          <button
-            onClick={trainModel}
-            style={{ width: "100%", marginTop: "15px" }}
-          >
-            Train Model
-          </button>
-
-          <button
-            onClick={regenerateData}
-            style={{ width: "100%", marginTop: "10px" }}
-          >
-            Generate Dataset
-          </button>
-
-          <div style={{ marginTop: "20px" }}>
-            <p><b>Training Loss:</b> {trainLoss.toFixed(4)}</p>
-            <p><b>Test Loss:</b> {testLoss.toFixed(4)}</p>
-          </div>
+        {/* METRICS */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, #f3e8ff, #ede9fe)",
+            padding: "15px",
+            borderRadius: "12px",
+            marginTop: "10px",
+            boxShadow: "0 8px 20px rgba(124,58,237,0.15)",
+          }}
+        >
+          <p><b>Training Loss:</b> {trainLoss.toFixed(4)}</p>
+          <p><b>Test Loss:</b> {testLoss.toFixed(4)}</p>
         </div>
+      </div>
 
-        {/* RIGHT PANEL */}
-        <div style={{ flex: 1, padding: "30px" }}>
+      {/* RIGHT PANEL */}
+      <div
+        style={{
+          background: "rgba(255,255,255,0.9)",
+          backdropFilter: "blur(10px)",
+          borderRadius: "16px",
+          padding: "25px",
+          boxShadow: "0 15px 40px rgba(0,0,0,0.08)",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <h3 style={{ marginBottom: "15px", color: "#4f46e5" }}>
+          Model Visualization
+        </h3>
+
+        <div style={{ flex: 1 }}>
           <Line
             data={chartData}
             options={{
@@ -272,7 +325,8 @@ function App() {
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default App;
