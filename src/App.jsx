@@ -7,10 +7,19 @@ import {
   Title,
   Tooltip,
   Legend,
+  CategoryScale,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 
-ChartJS.register(LineElement, PointElement, LinearScale, Title, Tooltip, Legend);
+ChartJS.register(
+  LineElement,
+  PointElement,
+  LinearScale,
+  Title,
+  Tooltip,
+  Legend,
+  CategoryScale
+);
 
 function App() {
   const [learningRate, setLearningRate] = useState(0.01);
@@ -21,6 +30,7 @@ function App() {
   const [weights, setWeights] = useState([0, 0]);
   const [trainLoss, setTrainLoss] = useState(0);
   const [testLoss, setTestLoss] = useState(0);
+  const [lossHistory, setLossHistory] = useState([]);
 
   // Generate Dataset
   const generateDataset = () => {
@@ -41,9 +51,9 @@ function App() {
   const [dataset, setDataset] = useState(generateDataset());
   const { trainData, testData } = dataset;
 
-  // Training Function
   const trainModel = () => {
     let newWeights = Array(degree + 1).fill(0);
+    let history = [];
 
     for (let iter = 0; iter < iterations; iter++) {
       let gradients = Array(degree + 1).fill(0);
@@ -67,19 +77,22 @@ function App() {
           learningRate *
           (gradients[d] / trainData.length + regularizationTerm);
       }
+
+      // Calculate iteration training loss
+      let iterationLoss = 0;
+      trainData.forEach((point) => {
+        let prediction = 0;
+        for (let d = 0; d <= degree; d++) {
+          prediction += newWeights[d] * Math.pow(point.x, d);
+        }
+        iterationLoss += Math.pow(prediction - point.y, 2);
+      });
+
+      history.push(iterationLoss / trainData.length);
     }
 
-    // Training Loss
-    let totalTrainError = 0;
-    trainData.forEach((point) => {
-      let prediction = 0;
-      for (let d = 0; d <= degree; d++) {
-        prediction += newWeights[d] * Math.pow(point.x, d);
-      }
-      totalTrainError += Math.pow(prediction - point.y, 2);
-    });
-
-    const trainMSE = totalTrainError / trainData.length;
+    // Final Training Loss
+    const finalTrainLoss = history[history.length - 1];
 
     // Test Loss
     let totalTestError = 0;
@@ -91,11 +104,12 @@ function App() {
       totalTestError += Math.pow(prediction - point.y, 2);
     });
 
-    const testMSE = totalTestError / testData.length;
+    const finalTestLoss = totalTestError / testData.length;
 
     setWeights(newWeights);
-    setTrainLoss(trainMSE);
-    setTestLoss(testMSE);
+    setTrainLoss(finalTrainLoss);
+    setTestLoss(finalTestLoss);
+    setLossHistory(history);
   };
 
   const regenerateData = () => {
@@ -103,6 +117,7 @@ function App() {
     setWeights(Array(degree + 1).fill(0));
     setTrainLoss(0);
     setTestLoss(0);
+    setLossHistory([]);
   };
 
   const allPoints = [...trainData, ...testData];
@@ -149,6 +164,19 @@ function App() {
     ],
   };
 
+  const lossChartData = {
+    labels: lossHistory.map((_, i) => i + 1),
+    datasets: [
+      {
+        label: "Training Loss Over Iterations",
+        data: lossHistory,
+        borderColor: "purple",
+        borderWidth: 2,
+        fill: false,
+      },
+    ],
+  };
+
   const options = {
     responsive: true,
     scales: {
@@ -178,7 +206,7 @@ function App() {
         }}
       >
         <h1>ML Learning Sandbox</h1>
-        <p>Interactive Overfitting Simulator</p>
+        <p>Interactive Gradient Descent + Overfitting Simulator</p>
 
         {/* Sliders */}
         <div style={{ margin: "20px" }}>
@@ -258,10 +286,18 @@ function App() {
           Generate New Dataset
         </button>
 
-        {/* Chart */}
-        <div style={{ width: "100%", marginTop: "20px" }}>
+        {/* Main Chart */}
+        <div style={{ width: "100%", marginTop: "30px" }}>
           <Line data={chartData} options={options} />
         </div>
+
+        {/* Loss Chart */}
+        {lossHistory.length > 0 && (
+          <div style={{ width: "100%", marginTop: "40px" }}>
+            <h3>Loss vs Iterations</h3>
+            <Line data={lossChartData} />
+          </div>
+        )}
 
         {/* Results */}
         <div style={{ marginTop: "20px" }}>
@@ -272,7 +308,7 @@ function App() {
           <p>Training Loss: {trainLoss.toFixed(2)}</p>
           <p>Test Loss: {testLoss.toFixed(2)}</p>
 
-          <h3 style={{ marginTop: "15px" }}>Bias–Variance Analysis</h3>
+          <h3>Bias–Variance Analysis</h3>
           <p style={{ fontWeight: "bold" }}>Model State: {modelState}</p>
         </div>
       </div>
