@@ -15,10 +15,11 @@ ChartJS.register(LineElement, PointElement, LinearScale, Title, Tooltip, Legend)
 function App() {
   const [learningRate, setLearningRate] = useState(0.01);
   const [iterations, setIterations] = useState(100);
+  const [degree, setDegree] = useState(1);
   const [m, setM] = useState(0);
   const [b, setB] = useState(0);
+  const [loss, setLoss] = useState(0);
 
-  // Generate dataset once
   const dataPoints = useMemo(() => {
     return Array.from({ length: 20 }, (_, i) => {
       const x = i;
@@ -26,8 +27,6 @@ function App() {
       return { x, y };
     });
   }, []);
-
-  const [loss, setLoss] = useState(0);
 
   const trainModel = () => {
     let newM = m;
@@ -49,7 +48,6 @@ function App() {
       newB -= (learningRate * db) / dataPoints.length;
     }
 
-    // Calculate loss
     let totalError = 0;
     dataPoints.forEach((point) => {
       const prediction = newM * point.x + newB;
@@ -63,10 +61,18 @@ function App() {
     setLoss(mse);
   };
 
-  const lineData = dataPoints.map((point) => ({
-    x: point.x,
-    y: m * point.x + b,
-  }));
+  const lineData = dataPoints.map((point) => {
+    let yValue = 0;
+
+    for (let i = 0; i <= degree; i++) {
+      yValue += m * Math.pow(point.x, i);
+    }
+
+    return {
+      x: point.x,
+      y: yValue + b,
+    };
+  });
 
   const chartData = {
     datasets: [
@@ -77,7 +83,7 @@ function App() {
         showLine: false,
       },
       {
-        label: "Regression Line",
+        label: "Model Curve",
         data: lineData,
         borderColor: "red",
         borderWidth: 2,
@@ -96,7 +102,7 @@ function App() {
   return (
     <div style={{ textAlign: "center", padding: "30px" }}>
       <h1>ML Learning Sandbox</h1>
-      <p>Interactive Gradient Descent Simulator</p>
+      <p>Gradient Descent + Overfitting Simulator</p>
 
       <div style={{ margin: "20px" }}>
         <label>Learning Rate: {learningRate}</label>
@@ -124,6 +130,19 @@ function App() {
         />
       </div>
 
+      <div style={{ margin: "20px" }}>
+        <label>Model Complexity (Degree): {degree}</label>
+        <br />
+        <input
+          type="range"
+          min="1"
+          max="8"
+          step="1"
+          value={degree}
+          onChange={(e) => setDegree(Number(e.target.value))}
+        />
+      </div>
+
       <button
         onClick={trainModel}
         style={{ padding: "10px 20px", marginBottom: "20px" }}
@@ -135,10 +154,10 @@ function App() {
         <Line data={chartData} options={options} />
       </div>
 
-      <p style={{ marginTop: "20px" }}>
-        Current Equation: y = {m.toFixed(2)}x + {b.toFixed(2)}
+      <div style={{ marginTop: "20px" }}>
+        <p>Current Equation: y = {m.toFixed(2)}x + {b.toFixed(2)}</p>
         <p>Current Loss (MSE): {loss.toFixed(2)}</p>
-      </p>
+      </div>
     </div>
   );
 }
