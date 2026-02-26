@@ -13,11 +13,11 @@ import { Line } from "react-chartjs-2";
 ChartJS.register(LineElement, PointElement, LinearScale, Title, Tooltip, Legend);
 
 function App() {
-  
   const [learningRate, setLearningRate] = useState(0.01);
   const [iterations, setIterations] = useState(200);
   const [degree, setDegree] = useState(1);
   const [lambda, setLambda] = useState(0);
+  const [noiseLevel, setNoiseLevel] = useState(10);
   const [weights, setWeights] = useState([0, 0]);
   const [trainLoss, setTrainLoss] = useState(0);
   const [testLoss, setTestLoss] = useState(0);
@@ -26,7 +26,7 @@ function App() {
   const generateDataset = () => {
     const allPoints = Array.from({ length: 20 }, (_, i) => {
       const x = i;
-      const y = 2 * x + 5 + (Math.random() - 0.5) * 10;
+      const y = 2 * x + 5 + (Math.random() - 0.5) * noiseLevel;
       return { x, y };
     });
 
@@ -61,11 +61,11 @@ function App() {
       });
 
       for (let d = 0; d <= degree; d++) {
-  const regularizationTerm = lambda * newWeights[d];
-  newWeights[d] -=
-    (learningRate *
-      (gradients[d] / trainData.length + regularizationTerm));
-}
+        const regularizationTerm = lambda * newWeights[d];
+        newWeights[d] -=
+          learningRate *
+          (gradients[d] / trainData.length + regularizationTerm);
+      }
     }
 
     // Training Loss
@@ -171,6 +171,7 @@ function App() {
         <h1>ML Learning Sandbox</h1>
         <p>Interactive Overfitting Simulator</p>
 
+        {/* Sliders */}
         <div style={{ margin: "20px" }}>
           <label>Learning Rate: {learningRate}</label>
           <br />
@@ -211,18 +212,32 @@ function App() {
         </div>
 
         <div style={{ margin: "20px" }}>
-  <label>Regularization (λ): {lambda}</label>
-  <br />
-  <input
-    type="range"
-    min="0"
-    max="1"
-    step="0.01"
-    value={lambda}
-    onChange={(e) => setLambda(Number(e.target.value))}
-  />
-</div>
+          <label>Regularization (λ): {lambda}</label>
+          <br />
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={lambda}
+            onChange={(e) => setLambda(Number(e.target.value))}
+          />
+        </div>
 
+        <div style={{ margin: "20px" }}>
+          <label>Noise Level: {noiseLevel}</label>
+          <br />
+          <input
+            type="range"
+            min="0"
+            max="30"
+            step="1"
+            value={noiseLevel}
+            onChange={(e) => setNoiseLevel(Number(e.target.value))}
+          />
+        </div>
+
+        {/* Buttons */}
         <button
           onClick={trainModel}
           style={{ padding: "10px 20px", marginBottom: "20px" }}
@@ -241,10 +256,12 @@ function App() {
           Generate New Dataset
         </button>
 
+        {/* Chart */}
         <div style={{ width: "100%", margin: "auto" }}>
           <Line data={chartData} options={options} />
         </div>
 
+        {/* Results */}
         <div style={{ marginTop: "20px" }}>
           <p>
             Current Model:{" "}
@@ -262,28 +279,6 @@ function App() {
               <span style={{ color: "green" }}>
                 ✅ Model is Generalizing Well
               </span>
-            )}
-          </div>
-
-          <div
-            style={{
-              marginTop: "15px",
-              maxWidth: "600px",
-              marginInline: "auto",
-            }}
-          >
-            {isOverfitting ? (
-              <p style={{ color: "#b00020" }}>
-                High model complexity causes memorization of training data.
-                Performance drops on unseen test data.
-                This is <b>Overfitting (High Variance)</b>.
-              </p>
-            ) : (
-              <p style={{ color: "#0a7a0a" }}>
-                The model balances bias and variance properly.
-                Similar performance on training and test data.
-                This indicates good <b>Generalization</b>.
-              </p>
             )}
           </div>
         </div>
